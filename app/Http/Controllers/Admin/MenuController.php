@@ -63,10 +63,6 @@ class MenuController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -74,9 +70,10 @@ class MenuController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Menu $menu)
     {
-        //
+        $categories = Category::all();
+        return view('admin.menus.edit', compact('menu', 'categories'));
     }
 
     /**
@@ -86,9 +83,31 @@ class MenuController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Menu $menu)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'description' => 'required',
+            'price' => 'required'
+        ]);
+        $image = $menu->image;
+        if ($request->hasFile('image')) {
+            Storage::delete($menu->image);
+            $image = $request->file('image')->store('public/menus');
+        }
+
+        $menu->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'image' => $image,
+            'price' => $request->price
+        ]);
+
+        if ($request->has('categories')) {
+            $menu->categories()->sync($request->categories);
+        }
+
+        return redirect()->route('admin.menus.index');
     }
 
     /**
@@ -97,8 +116,11 @@ class MenuController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Menu $menu)
     {
-        //
+        Storage::delete($menu->image);
+        $menu->categories()->detach();
+        $menu->delete();
+        return redirect()->route('admin.menus.index');
     }
 }
