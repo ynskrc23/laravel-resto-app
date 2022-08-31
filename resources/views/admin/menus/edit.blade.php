@@ -62,7 +62,8 @@
                                     multiple>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id }}" @selected($menu->categories->contains($category))>
-                                            {{ $category->name }}</option>
+                                            {{ $category->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
